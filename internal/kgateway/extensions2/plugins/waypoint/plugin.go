@@ -89,7 +89,7 @@ func (t *PerClientProcessor) processBackend(kctx krt.HandlerContext, ctx context
 		Namespace: ucc.Namespace,
 	}
 	gwir := krt.FetchOne(kctx, t.commonCols.GatewayIndex.Gateways, krt.FilterKey(gwKey.ResourceName()))
-	if gwir == nil || gwir.Obj == nil || string(gwir.Obj.Spec.GatewayClassName) != t.waypointGatewayClassName {
+	if gwir == nil || gwir.Obj == nil || string(gwir.Obj.Spec.GatewayClassName) == t.waypointGatewayClassName {
 		// no op
 		return
 	}
