@@ -77,6 +77,7 @@ type StartConfig struct {
 	ExtraPlugins                func(ctx context.Context, commoncol *collections.CommonCollections, mergeSettingsJSON string) []sdk.Plugin
 	ExtraAgwPlugins             func(ctx context.Context, agw *agwplugins.AgwCollections) []agwplugins.AgwPlugin
 	HelmValuesGeneratorOverride func(cli client.Client, inputs *deployer.Inputs) deployer.HelmValuesGenerator
+	ExtraGatewayParameters      []client.Object
 	Client                      istiokube.Client
 	Validator                   validator.Validator
 
@@ -327,7 +328,7 @@ func (c *ControllerBuilder) Build(ctx context.Context) error {
 	}
 
 	setupLog.Info("creating base gateway controller")
-	if err := NewBaseGatewayController(ctx, gwCfg, c.cfg.HelmValuesGeneratorOverride); err != nil {
+	if err := NewBaseGatewayController(ctx, gwCfg, c.cfg.HelmValuesGeneratorOverride, c.cfg.ExtraGatewayParameters); err != nil {
 		setupLog.Error(err, "unable to create gateway controller")
 		return err
 	}
@@ -349,7 +350,7 @@ func (c *ControllerBuilder) Build(ctx context.Context) error {
 		if !globalSettings.EnableAgentgateway {
 			setupLog.Info("using inference extension without agentgateway is deprecated in v2.1 and will not be supported in v2.2.")
 		}
-		if err := NewBaseInferencePoolController(ctx, poolCfg, &gwCfg, c.cfg.HelmValuesGeneratorOverride); err != nil {
+		if err := NewBaseInferencePoolController(ctx, poolCfg, &gwCfg, c.cfg.HelmValuesGeneratorOverride, c.cfg.ExtraGatewayParameters); err != nil {
 			setupLog.Error(err, "unable to create inferencepool controller")
 			return err
 		}

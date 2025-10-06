@@ -38,6 +38,13 @@ type GatewayParameters struct {
 	knownGWParameters           []client.Object
 }
 
+// WithExtraGatewayParameters registers additional parameter object types that should be watched by the controller.
+// This is separate from the generator override - it's purely for setting up watches.
+func (gp *GatewayParameters) WithExtraGatewayParameters(objects ...client.Object) *GatewayParameters {
+	gp.knownGWParameters = append(gp.knownGWParameters, objects...)
+	return gp
+}
+
 type kGatewayParameters struct {
 	cli    client.Client
 	inputs *deployer.Inputs

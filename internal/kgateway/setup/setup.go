@@ -104,6 +104,12 @@ func WithHelmValuesGeneratorOverride(helmValuesGeneratorOverride func(cli client
 	}
 }
 
+func WithExtraGatewayParameters(extraGatewayParameters []client.Object) func(*setup) {
+	return func(s *setup) {
+		s.extraGatewayParameters = extraGatewayParameters
+	}
+}
+
 func WithRestConfig(rc *rest.Config) func(*setup) {
 	return func(s *setup) {
 		s.restConfig = rc
@@ -176,6 +182,7 @@ type setup struct {
 	extraPlugins                func(ctx context.Context, commoncol *collections.CommonCollections, mergeSettingsJSON string) []sdk.Plugin
 	extraAgwPlugins             func(ctx context.Context, agw *agwplugins.AgwCollections) []agwplugins.AgwPlugin
 	helmValuesGeneratorOverride func(cli client.Client, inputs *deployer.Inputs) deployer.HelmValuesGenerator
+	extraGatewayParameters      []client.Object
 	extraXDSCallbacks           xdsserver.Callbacks
 	xdsListener                 net.Listener
 	agwXdsListener              net.Listener
@@ -352,6 +359,7 @@ func (s *setup) Start(ctx context.Context) error {
 		s.agentgatewayClassName, s.additionalGatewayClasses, setupOpts, s.restConfig,
 		istioClient, commoncol, agwCollections, uccBuilder, s.extraPlugins, s.extraAgwPlugins,
 		s.helmValuesGeneratorOverride,
+		s.extraGatewayParameters,
 		s.validator,
 		s.extraAgwPolicyStatusHandlers,
 	)
@@ -386,6 +394,7 @@ func BuildKgatewayWithConfig(
 	extraPlugins func(ctx context.Context, commoncol *collections.CommonCollections, mergeSettingsJSON string) []sdk.Plugin,
 	extraAgwPlugins func(ctx context.Context, agw *agwplugins.AgwCollections) []agwplugins.AgwPlugin,
 	helmValuesGeneratorOverride func(cli client.Client, inputs *deployer.Inputs) deployer.HelmValuesGenerator,
+	extraGatewayParameters []client.Object,
 	validator validator.Validator,
 	extraAgwPolicyStatusHandlers map[string]agwplugins.AgwPolicyStatusSyncHandler,
 ) error {
@@ -412,6 +421,7 @@ func BuildKgatewayWithConfig(
 		ExtraPlugins:                 extraPlugins,
 		ExtraAgwPlugins:              extraAgwPlugins,
 		HelmValuesGeneratorOverride:  helmValuesGeneratorOverride,
+		ExtraGatewayParameters:       extraGatewayParameters,
 		RestConfig:                   restConfig,
 		SetupOpts:                    setupOpts,
 		Client:                       kubeClient,
