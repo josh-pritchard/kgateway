@@ -28,6 +28,7 @@ type Options struct {
 	ExtraPlugins                func(ctx context.Context, commoncol *collections.CommonCollections, mergeSettingsJSON string) []sdk.Plugin
 	ExtraAgwPlugins             func(ctx context.Context, agw *agwplugins.AgwCollections) []agwplugins.AgwPlugin
 	HelmValuesGeneratorOverride func(cli client.Client, inputs *deployer.Inputs) deployer.HelmValuesGenerator
+	ExtraGatewayParameters      []client.Object
 	ExtraXDSCallbacks           xdsserver.Callbacks
 	RestConfig                  *rest.Config
 	CtrlMgrOptions              func(context.Context) *ctrl.Options
@@ -45,6 +46,7 @@ func New(opts Options) (setup.Server, error) {
 		setup.WithExtraPlugins(opts.ExtraPlugins),
 		setup.WithExtraAgwPlugins(opts.ExtraAgwPlugins),
 		setup.WithHelmValuesGeneratorOverride(opts.HelmValuesGeneratorOverride),
+		setup.WithExtraGatewayParameters(opts.ExtraGatewayParameters),
 		setup.WithGatewayControllerName(opts.GatewayControllerName),
 		setup.WithAgwControllerName(opts.AgentgatewayControllerName),
 		setup.WithGatewayClassName(opts.GatewayClassName),
