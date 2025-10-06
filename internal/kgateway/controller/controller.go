@@ -76,9 +76,9 @@ type GatewayConfig struct {
 	AdditionalGatewayClasses map[string]*deployer.GatewayClassInfo
 }
 
-type ExtraGatewayParametersFunc func(cli client.Client, inputs *deployer.Inputs) []deployer.ExtraGatewayParameters
+type HelmValuesGeneratorOverrideFunc func(cli client.Client, inputs *deployer.Inputs) deployer.HelmValuesGenerator
 
-func NewBaseGatewayController(ctx context.Context, cfg GatewayConfig, extraGatewayParameters ExtraGatewayParametersFunc) error {
+func NewBaseGatewayController(ctx context.Context, cfg GatewayConfig, helmValuesGeneratorOverride HelmValuesGeneratorOverrideFunc) error {
 	log := log.FromContext(ctx)
 	log.V(5).Info("starting gateway controller", "controllerName", cfg.ControllerName)
 
@@ -90,7 +90,7 @@ func NewBaseGatewayController(ctx context.Context, cfg GatewayConfig, extraGatew
 			customEvents: make(chan event.TypedGenericEvent[ir.Gateway], 1024),
 			metricsName:  "gatewayclass",
 		},
-		extraGatewayParameters: extraGatewayParameters,
+		helmValuesGeneratorOverride: helmValuesGeneratorOverride,
 	}
 
 	return run(
@@ -110,7 +110,7 @@ type InferencePoolConfig struct {
 func NewBaseInferencePoolController(ctx context.Context,
 	poolCfg *InferencePoolConfig,
 	gwCfg *GatewayConfig,
-	extraGatewayParameters func(cli client.Client, inputs *deployer.Inputs) []deployer.ExtraGatewayParameters) error {
+	helmValuesGeneratorOverride func(cli client.Client, inputs *deployer.Inputs) deployer.HelmValuesGenerator) error {
 	log := log.FromContext(ctx)
 	log.V(5).Info("starting inferencepool controller", "controllerName", poolCfg.ControllerName)
 
@@ -124,7 +124,7 @@ func NewBaseInferencePoolController(ctx context.Context,
 			customEvents: make(chan event.TypedGenericEvent[ir.Gateway], 1024),
 			metricsName:  "gatewayclass-inferencepool",
 		},
-		extraGatewayParameters: extraGatewayParameters,
+		helmValuesGeneratorOverride: helmValuesGeneratorOverride,
 	}
 
 	return run(ctx, controllerBuilder.watchInferencePool)
@@ -140,10 +140,10 @@ func run(ctx context.Context, funcs ...func(ctx context.Context) error) error {
 }
 
 type controllerBuilder struct {
-	cfg                    GatewayConfig
-	poolCfg                *InferencePoolConfig
-	reconciler             *controllerReconciler
-	extraGatewayParameters func(cli client.Client, inputs *deployer.Inputs) []deployer.ExtraGatewayParameters
+	cfg                         GatewayConfig
+	poolCfg                     *InferencePoolConfig
+	reconciler                  *controllerReconciler
+	helmValuesGeneratorOverride func(cli client.Client, inputs *deployer.Inputs) deployer.HelmValuesGenerator
 }
 
 func (c *controllerBuilder) addIndexes(ctx context.Context) error {
@@ -197,8 +197,8 @@ func (c *controllerBuilder) watchGw(ctx context.Context) error {
 	}
 
 	gwParams := internaldeployer.NewGatewayParameters(c.cfg.Mgr.GetClient(), inputs)
-	if c.extraGatewayParameters != nil {
-		gwParams.WithExtraGatewayParameters(c.extraGatewayParameters(c.cfg.Mgr.GetClient(), inputs)...)
+	if c.helmValuesGeneratorOverride != nil {
+		gwParams.WithHelmValuesGeneratorOverride(c.helmValuesGeneratorOverride(c.cfg.Mgr.GetClient(), inputs))
 	}
 
 	discoveryNamespaceFilterPredicate := predicate.NewPredicateFuncs(func(o client.Object) bool {
