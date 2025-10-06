@@ -232,20 +232,57 @@ func (c *controllerBuilder) watchGw(ctx context.Context) error {
 			func(ctx context.Context, obj client.Object) []reconcile.Request {
 				gwpName := obj.GetName()
 				gwpNamespace := obj.GetNamespace()
-				// look up the Gateways that are using this GatewayParameters object
+
+				reqs := []reconcile.Request{}
+
+				// 1. Look up Gateways directly using this GatewayParameters object (via spec.infrastructure.parametersRef)
 				var gwList apiv1.GatewayList
 				err := cli.List(ctx, &gwList, client.InNamespace(gwpNamespace), client.MatchingFieldsSelector{Selector: fields.OneTermEqualSelector(GatewayParamsField, gwpName)})
 				if err != nil {
 					log.Error(err, "could not list Gateways using GatewayParameters", "gwpNamespace", gwpNamespace, "gwpName", gwpName)
-					return []reconcile.Request{}
+				} else {
+					for _, gw := range gwList.Items {
+						reqs = append(reqs, reconcile.Request{
+							NamespacedName: client.ObjectKeyFromObject(&gw),
+						})
+					}
 				}
-				// requeue each Gateway that is using this GatewayParameters object
-				reqs := make([]reconcile.Request, 0, len(gwList.Items))
-				for _, gw := range gwList.Items {
-					reqs = append(reqs, reconcile.Request{
-						NamespacedName: client.ObjectKeyFromObject(&gw),
-					})
+
+				// 2. Look up GatewayClasses using this GatewayParameters object (via spec.parametersRef)
+				var gcList apiv1.GatewayClassList
+				err = cli.List(ctx, &gcList)
+				if err != nil {
+					log.Error(err, "could not list GatewayClasses")
+					return reqs
 				}
+
+				// For each GatewayClass that references this parameter, find all Gateways using that class
+				for _, gc := range gcList.Items {
+					// Only process GatewayClasses managed by our controllers
+					if gc.Spec.ControllerName != apiv1.GatewayController(c.cfg.ControllerName) &&
+						gc.Spec.ControllerName != apiv1.GatewayController(c.cfg.AgwControllerName) {
+						continue
+					}
+					if gc.Spec.ParametersRef != nil &&
+						gc.Spec.ParametersRef.Name == gwpName &&
+						gc.Spec.ParametersRef.Namespace != nil && string(*gc.Spec.ParametersRef.Namespace) == gwpNamespace {
+						// This GatewayClass references our GatewayParameters, find all Gateways using this class
+						var classGwList apiv1.GatewayList
+						err := cli.List(ctx, &classGwList, client.MatchingFields{GatewayClassField: gc.Name})
+						if err != nil {
+							log.Error(err, "could not list Gateways for GatewayClass", "gatewayClassName", gc.Name)
+							continue
+						}
+						for _, gw := range classGwList.Items {
+							if c.cfg.DiscoveryNamespaceFilter.Filter(&gw) {
+								reqs = append(reqs, reconcile.Request{
+									NamespacedName: client.ObjectKeyFromObject(&gw),
+								})
+							}
+						}
+					}
+				}
+
 				return reqs
 			}),
 			builder.WithPredicates(discoveryNamespaceFilterPredicate),
