@@ -74,12 +74,19 @@ type StartConfig struct {
 	RestConfig *rest.Config
 	// ExtensionsFactory is the factory function which will return an extensions.K8sGatewayExtensions
 	// This is responsible for producing the extension points that this controller requires
-	ExtraPlugins                func(ctx context.Context, commoncol *collections.CommonCollections, mergeSettingsJSON string) []sdk.Plugin
-	ExtraAgwPlugins             func(ctx context.Context, agw *agwplugins.AgwCollections) []agwplugins.AgwPlugin
+	ExtraPlugins    func(ctx context.Context, commoncol *collections.CommonCollections, mergeSettingsJSON string) []sdk.Plugin
+	ExtraAgwPlugins func(ctx context.Context, agw *agwplugins.AgwCollections) []agwplugins.AgwPlugin
+	// HelmValuesGeneratorOverride allows replacing the default helm values generation logic.
+	// When set, this generator will be used instead of the built-in GatewayParameters-based generator
+	// for all Gateways. This is a 1:1 replacement - you provide one generator that handles everything.
 	HelmValuesGeneratorOverride func(cli client.Client, inputs *deployer.Inputs) deployer.HelmValuesGenerator
-	ExtraGatewayParameters      []client.Object
-	Client                      istiokube.Client
-	Validator                   validator.Validator
+	// ExtraGatewayParameters is a list of additional parameter object types that the controller should watch.
+	// These are used to set up watches so that changes to custom parameter objects trigger Gateway reconciliation.
+	// The objects should be empty instances of the types you want to watch (e.g., &corev1.ConfigMap{}, &MyCustomCRD{}).
+	// This is separate from HelmValuesGeneratorOverride - these are just for watch registration.
+	ExtraGatewayParameters []client.Object
+	Client                 istiokube.Client
+	Validator              validator.Validator
 
 	AgwCollections    *agwplugins.AgwCollections
 	CommonCollections *collections.CommonCollections
