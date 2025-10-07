@@ -19,19 +19,26 @@ import (
 )
 
 type Options struct {
-	GatewayControllerName       string
-	AgentgatewayControllerName  string
-	GatewayClassName            string
-	WaypointGatewayClassName    string
-	AgentgatewayClassName       string
-	AdditionalGatewayClasses    map[string]*deployer.GatewayClassInfo
-	ExtraPlugins                func(ctx context.Context, commoncol *collections.CommonCollections, mergeSettingsJSON string) []sdk.Plugin
-	ExtraAgwPlugins             func(ctx context.Context, agw *agwplugins.AgwCollections) []agwplugins.AgwPlugin
+	GatewayControllerName      string
+	AgentgatewayControllerName string
+	GatewayClassName           string
+	WaypointGatewayClassName   string
+	AgentgatewayClassName      string
+	AdditionalGatewayClasses   map[string]*deployer.GatewayClassInfo
+	ExtraPlugins               func(ctx context.Context, commoncol *collections.CommonCollections, mergeSettingsJSON string) []sdk.Plugin
+	ExtraAgwPlugins            func(ctx context.Context, agw *agwplugins.AgwCollections) []agwplugins.AgwPlugin
+	// HelmValuesGeneratorOverride allows replacing the default helm values generation logic.
+	// When set, this generator will be used instead of the built-in GatewayParameters-based generator
+	// for all Gateways. This is a 1:1 replacement - you provide one generator that handles everything.
 	HelmValuesGeneratorOverride func(cli client.Client, inputs *deployer.Inputs) deployer.HelmValuesGenerator
-	ExtraGatewayParameters      []client.Object
-	ExtraXDSCallbacks           xdsserver.Callbacks
-	RestConfig                  *rest.Config
-	CtrlMgrOptions              func(context.Context) *ctrl.Options
+	// ExtraGatewayParameters is a list of additional parameter object types that the controller should watch.
+	// These are used to set up watches so that changes to custom parameter objects trigger Gateway reconciliation.
+	// The objects should be empty instances of the types you want to watch (e.g., &corev1.ConfigMap{}, &MyCustomCRD{}).
+	// This is separate from HelmValuesGeneratorOverride - these are just for watch registration.
+	ExtraGatewayParameters []client.Object
+	ExtraXDSCallbacks      xdsserver.Callbacks
+	RestConfig             *rest.Config
+	CtrlMgrOptions         func(context.Context) *ctrl.Options
 	// extra controller manager config, like registering additional controllers
 	ExtraManagerConfig []func(ctx context.Context, mgr manager.Manager, objectFilter kubetypes.DynamicObjectFilter) error
 	// Validator is the validator to use for the controller.
