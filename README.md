@@ -18,7 +18,7 @@ With a control plane that scales from lightweight microgateway deployments betwe
 
 ### Use Cases
 
-kgateway is designed for:
+Kgateway is designed for:
 
 * **Advanced Ingress Controller and Next-Gen API Gateway**: Aggregate web APIs and apply functions like authentication, authorization and rate limiting in one place. Powered by [Envoy](https://www.envoyproxy.io) or [agentgateway](https://github.com/agentgateway/agentgateway) and programmed with the [Gateway API](https://gateway-api.sigs.k8s.io/), kgateway is a world-leading Cloud Native ingress.
 
