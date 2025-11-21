@@ -12,7 +12,7 @@
 
 ## About kgateway
 
-kgateway is the most mature and widely deployed Envoy-based gateway in the market today. Built on open source and open standards, **kgateway is a dual control plane that implements the [Kubernetes Gateway API](https://gateway-api.sigs.k8s.io/) for both [Envoy](https://github.com/envoyproxy/envoy) and [agentgateway](https://github.com/agentgateway/agentgateway)**. This unique architecture enables kgateway to provide unified API connectivity spanning from traditional HTTP/gRPC workloads to advanced AI agent orchestration.
+Kgateway is the most mature and widely deployed gateway in the market today. Built on open source and open standards, **kgateway is a dual control plane that implements the [Kubernetes Gateway API](https://gateway-api.sigs.k8s.io/) for both [Envoy](https://github.com/envoyproxy/envoy) and [agentgateway](https://github.com/agentgateway/agentgateway)**. This unique architecture enables kgateway to provide unified API connectivity spanning from traditional HTTP/gRPC workloads to advanced AI agent orchestration.
 
 With a control plane that scales from lightweight microgateway deployments between services, to massively parallel centralized gateways handling billions of API calls, to advanced AI gateway use cases for safety, security, and governance, kgateway brings omni-directional API connectivity to any cloud and any environment.
 
