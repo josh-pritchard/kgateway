@@ -28,8 +28,6 @@ Kgateway is designed for:
 
 * **Native MCP and Agent-to-Agent Gateway**: Federate Model Context Protocol tool services and secure agent-to-agent communications with a single scalable endpoint powered by agentgateway.
 
-
-
 * **Hybrid Application Migration**: Route to backends implemented as microservices, serverless functions or legacy apps. Gradually migrate from legacy code while maintaining existing systems.
 
 Kgateway is feature-rich, fast, and flexible. It excels in function-level routing, supports legacy apps, microservices and serverless, offers robust discovery capabilities, integrates seamlessly with open-source projects, and is designed to support hybrid applications with various technologies, architectures, protocols, and clouds.
