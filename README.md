@@ -57,7 +57,7 @@ Please refer to [devel/contributing/releasing.md](devel/contributing/releasing.m
 
 ## Thanks
 
-kgateway would not be possible without the valuable open source work of projects in the community. We would like to extend a special thank-you to [Envoy](https://www.envoyproxy.io) and [agentgateway](https://github.com/agentgateway/agentgateway), the two data planes upon which we build our dual control plane architecture.
+Kgateway would not be possible without the valuable open source work of projects in the community. We would like to extend a special thank-you to [Envoy](https://www.envoyproxy.io) and [agentgateway](https://github.com/agentgateway/agentgateway), the two data planes upon which we build our dual control plane architecture.
 
 ## Security
 
